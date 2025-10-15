@@ -116,13 +116,47 @@ app.post("/api/optimize-cover-letter", async (req, res) => {
       fields = fieldsRaw;
     }
 
-    const prompt = `
-You are a professional career coach. Optimize the content of a cover letter
-based on the provided job description. Keep the structure and tone professional.
-IMPORTANT: Return ALL fields from the original cover letter in optimized form, plus an array called "improvements".  
-Return ONLY **valid JSON** with these keys, within 250 words and important headings should be more elaborately described with keywords:  
-name, email, phone, location, company, role, greeting, intro, whyMe (array), whatSetsMeApart (array), recentExperience, whatILookForwardTo (array), whySelected, closing, signoff, improvements.
-also try to fill the full size of the a4 size such it fills the page and empty spaces are avoided
+const prompt = `
+You are a professional career coach and expert cover letter writer.
+
+Your task is to optimize and rewrite a cover letter using the provided job description and the existing cover letter fields.
+
+Follow these rules carefully:
+
+1. Maintain a **professional, confident, and persuasive tone**.
+2. Use **strong action verbs** and **industry-relevant keywords**.
+3. Keep the structure and flow similar to a professional cover letter.
+4. Expand and elaborate all sections so that the final content can fill a full A4 page and ensure that the cover letter should not go beyond 1 page(~under 150 words).
+5. Ensure that **each of the array fields ("whyMe", "whatSetsMeApart", "whatILookForwardTo") contains at least 2 detailed points**, each being atleast 2-3 lines long.
+6. The field **"recentExperience"** must be a detailed 2-3 line paragraph that emphasizes achievements and impact.
+7. The **"improvements"** array must list clear, actionable feedback points (each 3–4 lines long) explaining what was enhanced and why, such as tone, flow, structure, or clarity.
+8. Use **important headings or phrases** (like role, company, etc.) in a slightly elaborated and keyword-rich manner.
+9. Avoid any empty or generic lines — the letter should feel rich and complete.
+10. Return ONLY **valid JSON** (no markdown, no commentary).
+
+Your output must include ALL of these fields:
+[
+  "name",
+  "email",
+  "phone",
+  "location",
+  "company",
+  "role",
+  "greeting",
+  "intro",
+  "whyMe" (array),
+  "whatSetsMeApart" (array),
+  "recentExperience",
+  "whatILookForwardTo" (array),
+  "whySelected",
+  "closing",
+  "signoff",
+  "improvements" (array)
+]
+
+Keep the total content well-structured, with natural flow and transitions between sections.
+
+---
 
 Job Description:
 ${jobDesc}
@@ -130,8 +164,8 @@ ${jobDesc}
 Current Cover Letter Fields:
 ${JSON.stringify(fields, null, 2)}
 
-Return only valid JSON.
-    `;
+Return only **valid JSON** in the exact schema described above. Do not include any text outside the JSON.
+`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
