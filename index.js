@@ -5,6 +5,7 @@ import { PDFDocument, StandardFonts } from "pdf-lib";
 import 'dotenv/config';
 import { UserModel } from "./UserModel.js";
 import mongoose from "mongoose";
+import {ProfileModel} from './ProfileModel.js';
 
 const app = express();
 app.use(cors());
@@ -16,7 +17,7 @@ const openai = new openAI({
 
 app.post('/api/allusers', async (req, res) => {
   try {
-    const users = await UserModel.find();
+    const users = await ProfileModel.find();
     res.status(200).json({message : "Users fetched successfully", users });
   }
   catch (error) {
@@ -103,7 +104,7 @@ app.post('/api/allusers', async (req, res) => {
 
 app.post("/api/optimize-cover-letter", async (req, res) => {
   try {
-    const { jobDesc, fields: fieldsRaw } = req.body;
+    const { jobDesc, fields: fieldsRaw, userDetails } = req.body;
 
     let fields = {};
     if (typeof fieldsRaw === "string") {
@@ -127,12 +128,13 @@ Follow these rules carefully:
 2. Use **strong action verbs** and **industry-relevant keywords**.
 3. Keep the structure and flow similar to a professional cover letter.
 4. Expand and elaborate all sections so that the final content can fill a full A4 page and ensure that the cover letter should not go beyond 1 page(~under 150 words).
-5. Ensure that **each of the array fields ("whyMe", "whatSetsMeApart", "whatILookForwardTo") contains at least 2 detailed points**, each being atleast 2-3 lines long.
-6. The field **"recentExperience"** must be a detailed 2-3 line paragraph that emphasizes achievements and impact.
+5. Ensure that **each of the array fields ("whyMe", "whatSetsMeApart", "whatILookForwardTo") contains at least 2 detailed points**, each being atleast 2-3 lines long and keep it descriptive through keywords
+6.** The field **"recentExperience"** must be a detailed within 2-3 line paragraph that emphasizes achievements and impact.each line containing 8-12 words only 
 7. The **"improvements"** array must list clear, actionable feedback points (each 3–4 lines long) explaining what was enhanced and why, such as tone, flow, structure, or clarity.
 8. Use **important headings or phrases** (like role, company, etc.) in a slightly elaborated and keyword-rich manner.
 9. Avoid any empty or generic lines — the letter should feel rich and complete.
 10. Return ONLY **valid JSON** (no markdown, no commentary).
+11. Also replace the company Name of the feilds with company name from jobDescription . also ensure that feilds of userDetails should be appropriately be filled in releevant feilds like the name , email address and so on.
 
 Your output must include ALL of these fields:
 [
@@ -147,7 +149,7 @@ Your output must include ALL of these fields:
   "whyMe" (array),
   "whatSetsMeApart" (array),
   "recentExperience",
-  "whatILookForwardTo" (array),
+  "whatILookForwardTo" (array),:
   "whySelected",
   "closing",
   "signoff",
@@ -163,6 +165,9 @@ ${jobDesc}
 
 Current Cover Letter Fields:
 ${JSON.stringify(fields, null, 2)}
+
+Current User Data:
+${JSON.stringify(userDetails,null,2)}
 
 Return only **valid JSON** in the exact schema described above. Do not include any text outside the JSON.
 `;
